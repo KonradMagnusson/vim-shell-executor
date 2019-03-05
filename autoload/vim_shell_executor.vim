@@ -40,12 +40,16 @@ Py << endPython
 from vim_shell_executor import *
 
 def create_new_buffer(contents):
+    position = 'aboveleft'
+    if int(vim.eval('exists("g:executor_output_below_buffer")')):
+        position = 'belowright'
+
     vim.command('normal! Hmx``')
     delete_old_output_if_exists()
     if int(vim.eval('exists("g:executor_output_win_height")')):
-        vim.command('aboveleft {}split executor_output'.format(vim.eval("g:executor_output_win_height")))
+        vim.command('{} {}split executor_output'.format(position, vim.eval("g:executor_output_win_height")))
     else:
-        vim.command('aboveleft split executor_output')
+        vim.command('{} split executor_output'.format(position))
     vim.command('normal! ggdG')
     vim.command('setlocal filetype=text')
     vim.command('setlocal buftype=nowrite')
@@ -54,7 +58,12 @@ def create_new_buffer(contents):
     except:
         for index, line in enumerate(contents):
             vim.current.buffer.append(line)
-    vim.command('execute \'wincmd j\'')
+
+    if position == 'aboveleft':
+        vim.command('execute \'wincmd j\'')
+    else:
+        vim.command('execute \'wincmd k\'')
+
     vim.command('normal! `xzt``')
 
 def delete_old_output_if_exists():
